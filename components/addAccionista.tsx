@@ -11,7 +11,6 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { z } from "zod";
-import { useForm } from "@/context/FormContext";
 
 export interface Acionista {
   nomeEmpresa: string;
@@ -50,6 +49,7 @@ export function AddAcionistaDialog({
   const [percentualAcoes, setPercentualAcoes] = React.useState(
     initialData?.percentualAcoes || ""
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
   React.useEffect(() => {

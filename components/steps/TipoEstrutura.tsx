@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Building2, Landmark, Users } from "lucide-react";
 
 export function TipoEstrutura() {
-  const { formData, updateFormData, errorMessage } = useForm();
+  const { formData, updateFormData } = useForm();
 
   const estruturas = [
     {
@@ -18,8 +18,8 @@ export function TipoEstrutura() {
       icon: <Landmark className="w-6 h-6 mx-auto mb-2" />,
     },
     {
-      id: "associacao",
-      label: "Associação",
+      id: "Trust",
+      label: "Trust",
       icon: <Users className="w-6 h-6 mx-auto mb-2" />,
     },
   ];
@@ -50,10 +50,6 @@ export function TipoEstrutura() {
           ))}
         </div>
       </div>
-
-      {errorMessage && (
-        <p className="text-red-500 text-center">{errorMessage}</p>
-      )}
     </div>
   );
 }

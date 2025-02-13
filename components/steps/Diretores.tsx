@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useForm } from "@/context/FormContext";
 import { Card } from "../ui/card";
@@ -6,6 +7,7 @@ import { Label } from "../ui/label";
 import { Trash2, UserPen } from "lucide-react";
 import { AddDiretorDialog } from "../addDirector";
 import { jurisdicoesEmpresas } from "@/data/jurisdicoes";
+import { Director } from "@/interfaces/Director";
 
 export function Diretores() {
   const { formData, updateFormData } = useForm();
@@ -19,7 +21,18 @@ export function Diretores() {
 
   // Ao adicionar um diretor, garante que diretoriaPersonalizada seja false
   const handleAddDiretor = (diretor: { nome: string; passport: string }) => {
-    const novosDiretores = [...formData.diretores, diretor];
+    const novoDiretor: Director = {
+      nome: diretor.nome,
+      passport: diretor.passport,
+      origem: "", // valor padrão (ou coletado de outro input)
+      nascimento: "", // ou um valor padrão que faça sentido
+      address: "",
+      telefone: "",
+      email: "",
+      occupation: "",
+    };
+
+    const novosDiretores = [...formData.diretores, novoDiretor];
     updateFormData({
       diretores: novosDiretores,
       diretoriaPersonalizada: false,

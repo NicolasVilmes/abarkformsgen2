@@ -57,7 +57,7 @@ export function SourceOfWealth() {
             <Checkbox
               id={`origem-${index}`}
               checked={selectedOptions.includes(option)}
-              onCheckedChange={(checked) => toggleOption(option)}
+              onCheckedChange={() => toggleOption(option)}
               className="h-4 w-4"
             />
             <Label htmlFor={`origem-${index}`} className="cursor-pointer">

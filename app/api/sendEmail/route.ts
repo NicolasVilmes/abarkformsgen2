@@ -1,3 +1,5 @@
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // app/api/sendEmail/route.ts
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";

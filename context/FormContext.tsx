@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { createContext, useContext, useState } from "react";
@@ -25,6 +26,7 @@ export interface FormData {
   acionistas: Shareholder[];
   beneficiarios: BeneficioalOwner[];
   capitalSocial: string;
+  concordaCapitalSocial: boolean; // Adiciona essa propriedade
   origemFundos: string[];
   detalhesOrigemFundos: string;
   responsavelContabilidade?: ContabilResponsabel;
@@ -88,26 +90,6 @@ const stepDiretoresSchema = z
       path: ["diretores"],
     }
   );
-
-// Step 4: Acionistas – opcional
-const stepAcionistasSchema = z.object({
-  acionistas: z
-    .array(
-      z.object({
-        nomeEmpresa: z.string().nonempty("Nome da empresa é obrigatório"),
-        paisIncorporacao: z
-          .string()
-          .nonempty("País de incorporação é obrigatório"),
-        dataIncorporacao: z
-          .string()
-          .nonempty("Data de incorporação é obrigatória"),
-        percentualAcoes: z
-          .string()
-          .nonempty("Percentual de ações é obrigatório"),
-      })
-    )
-    .optional(),
-});
 
 // Step 5: Beneficiários – obrigatório que haja pelo menos um
 const stepBeneficiariosSchema = z
@@ -189,6 +171,7 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
     acionistas: [],
     beneficiarios: [],
     capitalSocial: "",
+    concordaCapitalSocial: false, // valor inicial
     origemFundos: [],
     detalhesOrigemFundos: "",
     responsavelContabilidade: undefined,
