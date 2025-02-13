@@ -37,7 +37,7 @@ export function TipoEstrutura() {
               key={estrutura.id}
               className={`p-6 cursor-pointer transition-all duration-200 hover:shadow-md ${
                 formData.tipoEstrutura === estrutura.id
-                  ? "border-blue-500 shadow-md"
+                  ? "border-abark-lighter shadow-md"
                   : "border-gray-200"
               }`}
               onClick={() => updateFormData({ tipoEstrutura: estrutura.id })}

@@ -64,7 +64,7 @@ export function NavigationButtons({ totalSteps }: NavigationButtonsProps) {
       {/* Botão Próximo ou Enviar */}
       <Button
         onClick={currentStep === totalSteps ? handleSubmit : nextStep}
-        className="bg-blue-500 hover:bg-blue-600 text-white transition-all duration-200"
+        className="bg-abark hover:bg-abark-dark text-white transition-all duration-200"
       >
         {currentStep === totalSteps ? "Enviar" : "Próximo"}
       </Button>
@@ -91,7 +91,7 @@ export function NavigationButtons({ totalSteps }: NavigationButtonsProps) {
           <DialogFooter>
             <Button
               onClick={() => setIsSuccess(false)}
-              className="w-full bg-blue-500 text-white"
+              className="w-full bg-abark-light text-white"
             >
               OK
             </Button>

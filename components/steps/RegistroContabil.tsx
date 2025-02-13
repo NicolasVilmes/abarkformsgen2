@@ -108,7 +108,7 @@ export function RegistroContabil() {
                 className={`p-4 border rounded-lg cursor-pointer flex items-center ${
                   selectedBeneficiaryIndex === index &&
                   rcMethod === "beneficiary"
-                    ? "border-blue-500"
+                    ? "border-abark-lighter shadow-md"
                     : "border-gray-200"
                 }`}
                 onClick={() => {

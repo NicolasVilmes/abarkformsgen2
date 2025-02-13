@@ -7,9 +7,14 @@ export default {
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
-  theme: {
-  	extend: {
-  		colors: {
+	theme: {
+		extend: {
+			colors: {
+				abark: "#184F61",
+				"abark-dark": "#0D2C3D",
+				"abark-light": "#2A7A8A",
+				"abark-lighter": "#3B9DB6",
+				"abark-second": "#D37610",
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',
   			card: {
