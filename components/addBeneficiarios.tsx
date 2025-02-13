@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useForm } from "@/context/FormContext";
@@ -23,50 +22,103 @@ export interface Beneficiario {
   isPep: boolean;
   percentualAcionaria: string;
   director?: string;
+  pepDescricao?: string;
 }
 
-// Schema de validação com Zod para Beneficiário
-const BeneficiarioSchema = z.object({
-  nome: z.string().nonempty("Nome é obrigatório"),
-  endereco: z.string().nonempty("Endereço é obrigatório"),
-  ocupacao: z.string().nonempty("Ocupação é obrigatória"),
-  nacionalidade: z.string().nonempty("Nacionalidade é obrigatória"),
-  dataNascimento: z.string().nonempty("Data de nascimento é obrigatória"),
-  isPep: z.boolean(),
-  percentualAcionaria: z
-    .string()
-    .nonempty("Percentual acionário é obrigatório"),
-  director: z.string().optional(),
-});
+// Schema de validação local (pode ser mais simples,
+// pois a validação final do Step 5 é no formContext)
+const BeneficiarioSchema = z
+  .object({
+    nome: z.string().nonempty("Nome é obrigatório"),
+    endereco: z.string().nonempty("Endereço é obrigatório"),
+    ocupacao: z.string().nonempty("Ocupação é obrigatória"),
+    nacionalidade: z.string().nonempty("Nacionalidade é obrigatória"),
+    dataNascimento: z.string().nonempty("Data de nascimento é obrigatória"),
+    isPep: z.boolean(),
+    percentualAcionaria: z
+      .string()
+      .nonempty("Percentual acionário é obrigatório"),
+    director: z.string().optional(),
+    pepDescricao: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.isPep) {
+        return data.pepDescricao && data.pepDescricao.trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Descrição da relação PEP é obrigatória",
+      path: ["pepDescricao"],
+    }
+  );
 
 export interface AddBeneficiarioDialogProps {
   onAdd: (beneficiario: Beneficiario) => void;
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  initialData?: Beneficiario;
 }
 
-export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
+export function AddBeneficiarioDialog({
+  onAdd,
+  open,
+  setOpen,
+  initialData,
+}: AddBeneficiarioDialogProps) {
   const { formData } = useForm();
-  const [open, setOpen] = React.useState(false);
 
-  // Estados dos campos do beneficiário
-  const [nome, setNome] = React.useState("");
-  const [endereco, setEndereco] = React.useState("");
-  const [ocupacao, setOcupacao] = React.useState("");
-  const [nacionalidade, setNacionalidade] = React.useState("");
-  const [dataNascimento, setDataNascimento] = React.useState("");
-  const [isPep, setIsPep] = React.useState(false);
-  const [percentualAcionaria, setPercentualAcionaria] = React.useState("");
+  const [nome, setNome] = React.useState(initialData?.nome || "");
+  const [endereco, setEndereco] = React.useState(initialData?.endereco || "");
+  const [ocupacao, setOcupacao] = React.useState(initialData?.ocupacao || "");
+  const [nacionalidade, setNacionalidade] = React.useState(
+    initialData?.nacionalidade || ""
+  );
+  const [dataNascimento, setDataNascimento] = React.useState(
+    initialData?.dataNascimento || ""
+  );
+  const [isPep, setIsPep] = React.useState(initialData?.isPep || false);
+  const [percentualAcionaria, setPercentualAcionaria] = React.useState(
+    initialData?.percentualAcionaria || ""
+  );
+  const [pepDescricao, setPepDescricao] = React.useState(
+    initialData?.pepDescricao || ""
+  );
+  const [selectedDirector, setSelectedDirector] = React.useState(
+    initialData?.director || ""
+  );
 
-  // Estado para opção de puxar informações de um diretor
-  const [useDirector, setUseDirector] = React.useState(false);
-  const [selectedDirector, setSelectedDirector] = React.useState("");
-
-  // Estado para armazenar erros de validação
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
-  // Quando a opção de puxar de diretor estiver ativa e um diretor for selecionado,
-  // preenche automaticamente os campos do beneficiário
+  // Atualiza os estados quando "initialData" ou "open" mudam
   React.useEffect(() => {
-    if (useDirector && selectedDirector && formData.diretores.length > 0) {
+    if (initialData) {
+      setNome(initialData.nome || "");
+      setEndereco(initialData.endereco || "");
+      setOcupacao(initialData.ocupacao || "");
+      setNacionalidade(initialData.nacionalidade || "");
+      setDataNascimento(initialData.dataNascimento || "");
+      setIsPep(initialData.isPep || false);
+      setPercentualAcionaria(initialData.percentualAcionaria || "");
+      setPepDescricao(initialData.pepDescricao || "");
+      setSelectedDirector(initialData.director || "");
+    } else {
+      setNome("");
+      setEndereco("");
+      setOcupacao("");
+      setNacionalidade("");
+      setDataNascimento("");
+      setIsPep(false);
+      setPercentualAcionaria("");
+      setPepDescricao("");
+      setSelectedDirector("");
+    }
+  }, [initialData, open]);
+
+  // Preenche automaticamente os campos se um diretor for selecionado
+  React.useEffect(() => {
+    if (selectedDirector && formData.diretores.length > 0) {
       const director = formData.diretores.find(
         (d: any) => d.nome === selectedDirector
       );
@@ -78,10 +130,9 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
         setNacionalidade(director.origem || "");
       }
     }
-  }, [useDirector, selectedDirector, formData.diretores]);
+  }, [selectedDirector, formData.diretores]);
 
   const handleSubmit = () => {
-    // Primeiro, valide os campos individuais usando Zod
     const beneficiarioData = {
       nome,
       endereco,
@@ -91,6 +142,7 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
       isPep,
       percentualAcionaria,
       director: selectedDirector || undefined,
+      pepDescricao: isPep ? pepDescricao : undefined,
     };
 
     const result = BeneficiarioSchema.safeParse(beneficiarioData);
@@ -104,36 +156,10 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
       setErrors(fieldErrors);
       return;
     }
-    // Se os dados individuais estão ok, proceda para calcular a soma dos percentuais
 
-    // Converte o novo percentual para número (removendo eventuais %)
-    const newPercent = parseFloat(percentualAcionaria.replace("%", ""));
-    if (isNaN(newPercent)) {
-      setErrors((prev) => ({
-        ...prev,
-        percentualAcionaria: "Valor inválido para percentual de ações",
-      }));
-      return;
-    }
-    // Soma os percentuais já cadastrados no contexto de beneficiários
-    const totalExisting = (formData.beneficiarios || []).reduce(
-      (sum, ben: any) => {
-        const perc = parseFloat(ben.percentualAcionaria.replace("%", ""));
-        return sum + (isNaN(perc) ? 0 : perc);
-      },
-      0
-    );
-    if (totalExisting + newPercent > 100) {
-      setErrors((prev) => ({
-        ...prev,
-        percentualAcionaria: "A soma dos percentuais não pode exceder 100%",
-      }));
-      return;
-    }
-
-    // Se tudo estiver ok, limpe os erros, chame onAdd e resete os campos
-    setErrors({});
+    // Chama a função de callback (onAdd) para adicionar/atualizar no array
     onAdd(result.data);
+    // Limpa os campos e fecha o diálogo
     setNome("");
     setEndereco("");
     setOcupacao("");
@@ -141,25 +167,28 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
     setDataNascimento("");
     setIsPep(false);
     setPercentualAcionaria("");
-    setUseDirector(false);
+    setPepDescricao("");
     setSelectedDirector("");
     setOpen(false);
   };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">Adicionar Beneficiário</Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-[90vw] max-h-[90vh] w-full h-full overflow-auto sm:max-w-none sm:max-h-none sm:w-auto sm:h-auto ">
+      {/* Conteúdo do modal */}
+      <DialogContent className="w-full h-full max-w-[90vw] max-h-[90vh] md:max-w-[30vw] md:max-h-[70vh] overflow-auto">
         <DialogHeader>
-          <DialogTitle>Adicionar Beneficiário Final</DialogTitle>
+          <DialogTitle>
+            {initialData
+              ? "Editar Beneficiário Final"
+              : "Adicionar Beneficiário Final"}
+          </DialogTitle>
         </DialogHeader>
-        {/* Opção para puxar dados de um diretor, se diretoria personalizada estiver ativa */}
-        {formData.diretoriaPersonalizada && formData.diretores.length > 0 && (
+
+        {/* Dropdown de diretores */}
+        {formData.diretores.length > 0 && (
           <div className="mb-4">
             <Label className="block text-sm font-medium">
-              O beneficiário também é um diretor? Se sim, selecione um:
+              Selecione um diretor para preencher os dados:
             </Label>
             <select
               className="mt-1 block w-full rounded-md border border-gray-300 p-2"
@@ -175,6 +204,7 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
             </select>
           </div>
         )}
+
         <div className="space-y-4">
           <div>
             <Label htmlFor="nome">Nome</Label>
@@ -261,9 +291,30 @@ export function AddBeneficiarioDialog({ onAdd }: AddBeneficiarioDialogProps) {
             />
             <Label htmlFor="isPep">É PEP?</Label>
           </div>
+          {isPep && (
+            <div>
+              <Label htmlFor="pepDescricao">
+                Descreva em detalhes a relação com PEP
+              </Label>
+              <textarea
+                id="pepDescricao"
+                value={pepDescricao}
+                onChange={(e) => setPepDescricao(e.target.value)}
+                placeholder="Explique detalhadamente a relação com PEP, incluindo informações relevantes..."
+                className="mt-1 block w-full rounded-md border border-gray-300 p-2"
+                rows={5}
+              />
+              {errors.pepDescricao && (
+                <p className="text-red-500 text-sm">{errors.pepDescricao}</p>
+              )}
+            </div>
+          )}
         </div>
+
         <DialogFooter>
-          <Button onClick={handleSubmit}>Salvar</Button>
+          <Button onClick={handleSubmit}>
+            {initialData ? "Salvar Alterações" : "Salvar"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

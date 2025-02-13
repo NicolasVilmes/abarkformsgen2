@@ -15,6 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "../ui/dialog";
+import { z } from "zod";
 
 // Interface para a entidade (para exibição)
 interface Entity {
@@ -23,23 +24,27 @@ interface Entity {
   type: "Diretor" | "Acionista" | "Beneficiário";
 }
 
-// Função auxiliar para converter um File para Base64
-const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
+// Schema de validação com Zod
+const DocumentSchema = z.object({
+  passaporteFile: z.instanceof(File, { message: "O passaporte é obrigatório" }),
+  comprovanteResidenciaFile: z.instanceof(File, {
+    message: "O comprovante de residência é obrigatório",
+  }),
+  cartaReferenciaFile: z
+    .instanceof(File, {
+      message: "A carta de referência bancária é obrigatória",
+    })
+    .optional(),
+});
 
 export function Docs() {
   const { formData, updateFormData } = useForm();
 
-  // Cria a lista combinada de entidades
+  // Lista combinada de entidades
   const allEntities: Entity[] = [
     ...formData.diretores.map((d) => ({
       nome: d.nome,
-      endereco: d.address, // ajuste conforme o campo correto
+      endereco: d.address,
       type: "Diretor" as const,
     })),
     ...formData.acionistas.map((a) => ({
@@ -54,7 +59,6 @@ export function Docs() {
     })),
   ];
 
-  // Gera uma lista única de entidades (usando o nome em lowercase para comparação)
   const uniqueEntities: Entity[] = Array.from(
     new Map(
       allEntities.map((entity) => [entity.nome.trim().toLowerCase(), entity])
@@ -63,18 +67,48 @@ export function Docs() {
 
   const [selectedEntity, setSelectedEntity] = useState<Entity | null>(null);
   const [open, setOpen] = useState(false);
-
-  // Estados para os arquivos
   const [passaporteFile, setPassaporteFile] = useState<File | null>(null);
   const [comprovanteResidenciaFile, setComprovanteResidenciaFile] =
     useState<File | null>(null);
   const [cartaReferenciaFile, setCartaReferenciaFile] = useState<File | null>(
     null
   );
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Converte um arquivo para Base64
+  const fileToBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
 
   const handleUploadSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEntity) return;
+
+    const documentData = {
+      passaporteFile,
+      comprovanteResidenciaFile,
+      cartaReferenciaFile:
+        selectedEntity.type === "Beneficiário"
+          ? cartaReferenciaFile
+          : undefined,
+    };
+
+    // Validação com Zod
+    const result = DocumentSchema.safeParse(documentData);
+    if (!result.success) {
+      const validationErrors: { [key: string]: string } = {};
+      result.error.errors.forEach((err) => {
+        if (err.path.length > 0) {
+          validationErrors[err.path[0] as string] = err.message;
+        }
+      });
+      setErrors(validationErrors);
+      return;
+    }
 
     try {
       const docs: { title: string; url: string; entityName: string }[] = [];
@@ -104,7 +138,7 @@ export function Docs() {
         });
       }
 
-      // Se desejar mesclar com documentos já existentes (excluindo os da mesma entidade)
+      // Atualiza os documentos no contexto
       const filteredDocs = (formData.documentos || []).filter(
         (doc: any) =>
           doc.entityName?.toLowerCase() !==
@@ -115,6 +149,7 @@ export function Docs() {
       updateFormData({ documentos: newDocs });
       console.log("Documentos atualizados no contexto:", newDocs);
       setOpen(false);
+      setErrors({});
     } catch (error) {
       console.error("Erro ao converter arquivo:", error);
     }
@@ -171,48 +206,43 @@ export function Docs() {
           </DialogHeader>
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="passaporte" className="block text-sm font-medium">
-                Passaporte
-              </Label>
+              <Label>Passaporte</Label>
               <Input
-                id="passaporte"
                 type="file"
-                onChange={(e) =>
-                  e.target.files && setPassaporteFile(e.target.files[0])
-                }
+                onChange={(e) => setPassaporteFile(e.target.files?.[0] || null)}
               />
+              {errors.passaporteFile && (
+                <p className="text-red-500 text-sm">{errors.passaporteFile}</p>
+              )}
             </div>
             <div>
-              <Label
-                htmlFor="comprovanteResidencia"
-                className="block text-sm font-medium"
-              >
-                Comprovante de Residência
-              </Label>
+              <Label>Comprovante de Residência</Label>
               <Input
-                id="comprovanteResidencia"
                 type="file"
                 onChange={(e) =>
-                  e.target.files &&
-                  setComprovanteResidenciaFile(e.target.files[0])
+                  setComprovanteResidenciaFile(e.target.files?.[0] || null)
                 }
               />
+              {errors.comprovanteResidenciaFile && (
+                <p className="text-red-500 text-sm">
+                  {errors.comprovanteResidenciaFile}
+                </p>
+              )}
             </div>
             {selectedEntity?.type === "Beneficiário" && (
               <div>
-                <Label
-                  htmlFor="cartaReferencia"
-                  className="block text-sm font-medium"
-                >
-                  Carta de Referência Bancária
-                </Label>
+                <Label>Carta de Referência Bancária</Label>
                 <Input
-                  id="cartaReferencia"
                   type="file"
                   onChange={(e) =>
-                    e.target.files && setCartaReferenciaFile(e.target.files[0])
+                    setCartaReferenciaFile(e.target.files?.[0] || null)
                   }
                 />
+                {errors.cartaReferenciaFile && (
+                  <p className="text-red-500 text-sm">
+                    {errors.cartaReferenciaFile}
+                  </p>
+                )}
               </div>
             )}
             <DialogFooter>

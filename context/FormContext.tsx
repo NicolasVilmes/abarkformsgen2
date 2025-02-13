@@ -110,23 +110,42 @@ const stepAcionistasSchema = z.object({
 });
 
 // Step 5: Beneficiários – obrigatório que haja pelo menos um
-const stepBeneficiariosSchema = z.object({
-  beneficiarios: z
-    .array(
-      z.object({
-        nome: z.string().nonempty("Nome é obrigatório"),
-        endereco: z.string().nonempty("Endereço é obrigatório"),
-        ocupacao: z.string().nonempty("Ocupação é obrigatória"),
-        nacionalidade: z.string().nonempty("Nacionalidade é obrigatória"),
-        dataNascimento: z.string().nonempty("Data de nascimento é obrigatória"),
-        isPep: z.boolean(),
-        percentualAcionaria: z
-          .string()
-          .nonempty("Percentual acionário é obrigatório"),
-      })
-    )
-    .min(1, "Adicione pelo menos um beneficiário"),
-});
+const stepBeneficiariosSchema = z
+  .object({
+    beneficiarios: z
+      .array(
+        z.object({
+          nome: z.string().nonempty("Nome é obrigatório"),
+          endereco: z.string().nonempty("Endereço é obrigatório"),
+          ocupacao: z.string().nonempty("Ocupação é obrigatória"),
+          nacionalidade: z.string().nonempty("Nacionalidade é obrigatória"),
+          dataNascimento: z
+            .string()
+            .nonempty("Data de nascimento é obrigatória"),
+          isPep: z.boolean(),
+          percentualAcionaria: z
+            .string()
+            .nonempty("Percentual acionário é obrigatório"),
+        })
+      )
+      .min(1, "Adicione pelo menos um beneficiário"),
+  })
+  .refine(
+    (data) => {
+      // Soma todos os percentuais, convertendo a string para número
+      const total = data.beneficiarios.reduce((acc, ben) => {
+        // remove "%" e converte para número
+        const val = parseFloat(ben.percentualAcionaria.replace("%", ""));
+        return acc + (isNaN(val) ? 0 : val);
+      }, 0);
+
+      return total === 100; // retorna true se for igual a 100
+    },
+    {
+      message: "A soma dos percentuais deve ser igual a 100%",
+      path: ["beneficiarios"],
+    }
+  );
 
 // Step 6: Origem dos Fundos
 const stepOrigemFundosSchema = z.object({

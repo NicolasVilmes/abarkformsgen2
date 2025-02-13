@@ -3,26 +3,46 @@ import { useForm } from "@/context/FormContext";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Label } from "../ui/label";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { AddAcionistaDialog } from "@/components/addAccionista";
 import { Building2 } from "lucide-react";
+import * as React from "react";
 
 export function Acionistas() {
   const { formData, updateFormData } = useForm();
+  const [dialogOpen, setDialogOpen] = React.useState(false);
+  const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+  const [editingData, setEditingData] = React.useState<any | null>(null);
 
-  const handleAddAcionista = (acionista: {
-    nomeEmpresa: string;
-    paisIncorporacao: string;
-    dataIncorporacao: string;
-    percentualAcoes: string;
-  }) => {
-    const novosAcionistas = [...formData.acionistas, acionista];
-    updateFormData({ acionistas: novosAcionistas });
+  // Adiciona ou edita um acionista
+  const handleAddOrUpdateAcionista = (acionista: any) => {
+    if (editingIndex !== null) {
+      // Edita um acionista existente
+      const updatedAcionistas = formData.acionistas.map((a, i) =>
+        i === editingIndex ? acionista : a
+      );
+      updateFormData({ acionistas: updatedAcionistas });
+    } else {
+      // Adiciona um novo acionista
+      const novosAcionistas = [...formData.acionistas, acionista];
+      updateFormData({ acionistas: novosAcionistas });
+    }
+    setEditingIndex(null);
+    setEditingData(null);
+    setDialogOpen(false);
   };
 
+  // Remove um acionista
   const handleRemoveAcionista = (index: number) => {
     const novosAcionistas = formData.acionistas.filter((_, i) => i !== index);
     updateFormData({ acionistas: novosAcionistas });
+  };
+
+  // Abre o modal para edição e carrega os dados
+  const handleEditClick = (index: number) => {
+    setEditingIndex(index);
+    setEditingData(formData.acionistas[index]);
+    setDialogOpen(true);
   };
 
   return (
@@ -46,23 +66,50 @@ export function Acionistas() {
                   {acionista.dataIncorporacao} - {acionista.percentualAcoes}
                 </Label>
               </div>
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon"
-                onClick={() => handleRemoveAcionista(index)}
-                className="absolute top-2 right-2"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              {/* Botões de Editar e Excluir */}
+              <div className="absolute top-2 right-2 flex space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleEditClick(index)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => handleRemoveAcionista(index)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
             </Card>
           ))}
         </div>
       )}
 
       <div className="flex justify-center">
-        <AddAcionistaDialog onAdd={handleAddAcionista} />
+        <Button
+          variant="outline"
+          onClick={() => {
+            setEditingIndex(null);
+            setEditingData(null);
+            setDialogOpen(true);
+          }}
+        >
+          Adicionar Acionista
+        </Button>
       </div>
+
+      {/* Modal de Adicionar/Editar Acionista */}
+      <AddAcionistaDialog
+        open={dialogOpen}
+        setOpen={setDialogOpen}
+        onAdd={handleAddOrUpdateAcionista}
+        initialData={editingData}
+      />
     </div>
   );
 }
