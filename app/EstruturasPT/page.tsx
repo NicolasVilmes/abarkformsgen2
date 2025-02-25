@@ -10,7 +10,6 @@ import { SourceOfWealth } from "@/components/steps/sourceOfWealth";
 import { RegistroContabil } from "@/components/steps/RegistroContabil";
 import { useForm } from "@/context/FormContext";
 import { NavigationButtons } from "@/components/NavigationButtons";
-import { Docs } from "@/components/steps/documentos";
 
 function FormSteps() {
   const { currentStep } = useForm();
@@ -24,7 +23,6 @@ function FormSteps() {
       {currentStep === 5 && <Beneficiarios />}
       {currentStep === 6 && <SourceOfWealth />}
       {currentStep === 7 && <RegistroContabil />}
-      {currentStep === 8 && <Docs />}
     </div>
   );
 }
@@ -38,7 +36,6 @@ export default function EstruturasPT() {
     "Beneficiários",
     "Origem dos Fundos",
     "Registro Contabil",
-    "Documentos",
   ];
 
   return (

@@ -92,37 +92,66 @@ export function AddAcionistaDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent>
+      <DialogContent className="max-w-lg w-full p-6">
         <DialogHeader>
-          <DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
             {initialData ? "Editar Acionista" : "Adicionar Acionista"}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
-          <Label>Nome da Empresa</Label>
-          <Input
-            value={nomeEmpresa}
-            onChange={(e) => setNomeEmpresa(e.target.value)}
-          />
-          <Label>País de Incorporação</Label>
-          <Input
-            value={paisIncorporacao}
-            onChange={(e) => setPaisIncorporacao(e.target.value)}
-          />
-          <Label>Data de Incorporação</Label>
-          <Input
-            type="date"
-            value={dataIncorporacao}
-            onChange={(e) => setDataIncorporacao(e.target.value)}
-          />
-          <Label>Percentual de Ações</Label>
-          <Input
-            value={percentualAcoes}
-            onChange={(e) => setPercentualAcoes(e.target.value)}
-          />
+          <div>
+            <Label htmlFor="nomeEmpresa" className="block mb-1">
+              Nome da Empresa
+            </Label>
+            <Input
+              id="nomeEmpresa"
+              value={nomeEmpresa}
+              onChange={(e) => setNomeEmpresa(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <Label htmlFor="paisIncorporacao" className="block mb-1">
+              País de Incorporação
+            </Label>
+            <Input
+              id="paisIncorporacao"
+              value={paisIncorporacao}
+              onChange={(e) => setPaisIncorporacao(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <Label htmlFor="dataIncorporacao" className="block mb-1">
+              Data de Incorporação
+            </Label>
+            <Input
+              id="dataIncorporacao"
+              type="date"
+              value={dataIncorporacao}
+              onChange={(e) => setDataIncorporacao(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <div>
+            <Label htmlFor="percentualAcoes" className="block mb-1">
+              Percentual de Ações
+            </Label>
+            <Input
+              id="percentualAcoes"
+              value={percentualAcoes}
+              onChange={(e) => setPercentualAcoes(e.target.value)}
+              className="w-full"
+            />
+          </div>
         </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit}>Salvar</Button>
+        <DialogFooter className="mt-6">
+          <Button
+            onClick={handleSubmit}
+            className="w-full bg-abark hover:bg-abark-dark"
+          >
+            Salvar
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

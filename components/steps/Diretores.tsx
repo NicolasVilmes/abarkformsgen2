@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import { useForm } from "@/context/FormContext";
 import { Card } from "../ui/card";
@@ -19,24 +18,15 @@ export function Diretores() {
   // Número mínimo de diretores exigido para a jurisdição selecionada (padrão 0 se não houver)
   const minDiretores = selectedJurisdicao?.diretor ?? 0;
 
-  // Ao adicionar um diretor, garante que diretoriaPersonalizada seja false
-  const handleAddDiretor = (diretor: { nome: string; passport: string }) => {
-    const novoDiretor: Director = {
-      nome: diretor.nome,
-      passport: diretor.passport,
-      origem: "", // valor padrão (ou coletado de outro input)
-      nascimento: "", // ou um valor padrão que faça sentido
-      address: "",
-      telefone: "",
-      email: "",
-      occupation: "",
-    };
-
-    const novosDiretores = [...formData.diretores, novoDiretor];
+  // Adiciona um novo diretor
+  const handleAddDiretor = (diretor: Director) => {
+    const novosDiretores = [...(formData.diretores || []), diretor];
     updateFormData({
       diretores: novosDiretores,
       diretoriaPersonalizada: false,
     });
+    console.log("Diretor adicionado:", diretor);
+    console.log("Diretores atualizados:", novosDiretores);
   };
 
   // Remove um diretor do array
@@ -72,6 +62,7 @@ export function Diretores() {
           mínimo <strong>{minDiretores}</strong> diretores.
         </p>
       )}
+
       {/* Se diretoria personalizada estiver selecionada, exibe a mensagem */}
       {formData.diretoriaPersonalizada && (
         <div className="text-center text-sm text-gray-600">
@@ -79,10 +70,10 @@ export function Diretores() {
         </div>
       )}
 
-      {/* Se houver diretores adicionados (e não for diretoria personalizada), exibe a lista */}
-      {!formData.diretoriaPersonalizada && formData.diretores.length > 0 && (
+      {/* Se houver diretores adicionados, exibe a lista */}
+      {!formData.diretoriaPersonalizada && formData.diretores.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {formData.diretores.map((diretor: any, index: number) => (
+          {formData.diretores.map((diretor: Director, index: number) => (
             <Card key={index} className="p-4 border rounded-lg relative">
               <div className="flex items-center">
                 <UserPen className="h-6 w-6 inline-block mr-2" />
@@ -102,22 +93,22 @@ export function Diretores() {
             </Card>
           ))}
         </div>
+      ) : (
+        <p className="text-gray-500 text-center">Nenhum diretor adicionado.</p>
       )}
 
-      {/* Área dos botões: */}
+      {/* Área dos botões */}
       <div className="flex justify-center items-center gap-4 mt-4">
-        {/* Exibe o botão de adicionar diretor se diretoria personalizada não estiver selecionada */}
         {!formData.diretoriaPersonalizada && (
           <AddDiretorDialog onAdd={handleAddDiretor} />
         )}
-        {/* Exibe o botão "Escolher Diretoria Personalizada" apenas se não houver diretores adicionados e diretoria personalizada ainda não estiver ativa */}
         {!formData.diretoriaPersonalizada &&
           formData.diretores.length === 0 && (
             <Button
               variant="outline"
               onClick={handleEscolherDiretoriaPersonalizada}
             >
-              Diretoria Tercerizada
+              Diretoria Terceirizada
             </Button>
           )}
       </div>

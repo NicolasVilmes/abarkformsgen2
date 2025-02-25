@@ -7,37 +7,82 @@ import { Button } from "../ui/button";
 import { Label } from "../ui/label";
 import { Trash2, Edit } from "lucide-react";
 import { AddBeneficiarioDialog } from "@/components/addBeneficiarios";
+import { toast } from "@/hooks/use-toast";
 
 export function Beneficiarios() {
   const { formData, updateFormData } = useForm();
   const [dialogOpen, setDialogOpen] = React.useState(false);
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
+  const [error, setError] = React.useState<string | null>(null);
 
-  // Adiciona um novo beneficiário ou atualiza um existente
+  // Função para calcular o total de participação acionária
+  const calcularPercentualTotal = (beneficiarios: any[]) => {
+    return beneficiarios.reduce((total, b) => {
+      const val = parseFloat(b.percentualAcionaria.replace("%", "")) || 0;
+      return total + val;
+    }, 0);
+  };
+
+  // Adiciona ou atualiza um beneficiário
   const handleAddOrUpdateBeneficiario = (beneficiario: any) => {
+    let novosBeneficiarios;
+
     if (editingIndex !== null) {
       // Edição
-      const updated = formData.beneficiarios.map((b: any, index: number) => {
-        if (index === editingIndex) return beneficiario;
-        return b;
-      });
-      updateFormData({ beneficiarios: updated });
+      novosBeneficiarios = formData.beneficiarios.map((b: any, index: number) =>
+        index === editingIndex ? beneficiario : b
+      );
     } else {
       // Adição
-      const novosBeneficiarios = [...formData.beneficiarios, beneficiario];
-      updateFormData({ beneficiarios: novosBeneficiarios });
+      novosBeneficiarios = [...formData.beneficiarios, beneficiario];
     }
+
+    // Calcula o total após a alteração
+    const totalPercentual = calcularPercentualTotal(novosBeneficiarios);
+
+    // Se for maior que 100%, exibe erro e não adiciona
+    if (totalPercentual > 100) {
+      setError("A soma dos percentuais acionários não pode ultrapassar 100%");
+      toast({
+        title: "Erro de validação",
+        description:
+          "A soma dos percentuais acionários não pode ultrapassar 100%",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setError(null); // Remove erro caso seja válido
+    updateFormData({ beneficiarios: novosBeneficiarios });
+
     setEditingIndex(null);
     setDialogOpen(false);
   };
 
+  // Remove um beneficiário
   const handleRemoveBeneficiario = (index: number) => {
     const novosBeneficiarios = formData.beneficiarios.filter(
       (_: any, i: number) => i !== index
     );
+
+    // Verifica se a remoção deixou o total correto
+    const totalPercentual = calcularPercentualTotal(novosBeneficiarios);
+    if (totalPercentual > 100) {
+      setError("A soma dos percentuais acionários não pode ultrapassar 100%");
+      toast({
+        title: "Erro de validação",
+        description:
+          "A soma dos percentuais acionários não pode ultrapassar 100%",
+        variant: "destructive",
+      });
+    } else {
+      setError(null);
+    }
+
     updateFormData({ beneficiarios: novosBeneficiarios });
   };
 
+  // Edita um beneficiário
   const handleEditClick = (index: number) => {
     setEditingIndex(index);
     setDialogOpen(true);
@@ -48,9 +93,12 @@ export function Beneficiarios() {
       <div className="text-center mb-8">
         <h2 className="text-2xl font-semibold mb-2">Beneficiários Finais</h2>
         <p className="text-gray-500">
-          Adicione ou edite os beneficiários finais da empresa
+          Adicione ou edite os beneficiários finais da empresa.
         </p>
       </div>
+
+      {/* Exibe mensagem de erro caso ultrapasse 100% */}
+      {error && <p className="text-red-500 text-center">{error}</p>}
 
       {formData.beneficiarios.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

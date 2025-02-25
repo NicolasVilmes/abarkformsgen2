@@ -14,7 +14,7 @@ export function SourceOfWealth() {
     "Economias",
     "Investimentos",
     "Herdança",
-    "Venda de ativos",
+    "Venda de Propriedades",
     "Outros",
   ];
 

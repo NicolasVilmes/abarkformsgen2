@@ -9,12 +9,13 @@ import { Director } from "@/interfaces/Director";
 import { Shareholder } from "@/interfaces/Shareholdes";
 import { BeneficioalOwner, ContabilResponsabel } from "@/interfaces/BO";
 
-// Nova interface para Documentos
+// Interface para documentos
 export interface Document {
   title: string;
   url: string;
 }
 
+// Interface principal do formulário
 export interface FormData {
   tipoEstrutura: string;
   nomeEmpresa: string[];
@@ -26,11 +27,10 @@ export interface FormData {
   acionistas: Shareholder[];
   beneficiarios: BeneficioalOwner[];
   capitalSocial: string;
-  concordaCapitalSocial: boolean; // Adiciona essa propriedade
   origemFundos: string[];
   detalhesOrigemFundos: string;
   responsavelContabilidade?: ContabilResponsabel;
-  documentos: Document[];
+  documentos?: Document[]; // 🚀 Agora OPCIONAL
 }
 
 interface FormContextType {
@@ -43,13 +43,10 @@ interface FormContextType {
 }
 
 // Schemas de validação com Zod
-
-// Step 1: Tipo de Estrutura
 const step1Schema = z.object({
   tipoEstrutura: z.string().nonempty("Selecione o tipo de estrutura"),
 });
 
-// Step 2: Informações Gerais
 const step2Schema = z.object({
   nomeEmpresa: z
     .array(
@@ -63,13 +60,18 @@ const step2Schema = z.object({
     .nonempty("Propósito de incorporação é obrigatório"),
 });
 
-// Step 3: Diretores
 const stepDiretoresSchema = z
   .object({
     diretores: z.array(
       z.object({
         nome: z.string().nonempty("Nome do diretor é obrigatório"),
-        // Outras propriedades podem ser adicionadas conforme necessário.
+        passport: z.string().nonempty("Número do passaporte é obrigatório"),
+        origem: z.string().optional(),
+        nascimento: z.string().optional(),
+        address: z.string().optional(),
+        telefone: z.string().optional(),
+        email: z.string().optional(),
+        occupation: z.string().optional(),
       })
     ),
     diretoriaPersonalizada: z.boolean(),
@@ -91,7 +93,6 @@ const stepDiretoresSchema = z
     }
   );
 
-// Step 5: Beneficiários – obrigatório que haja pelo menos um
 const stepBeneficiariosSchema = z
   .object({
     beneficiarios: z
@@ -114,14 +115,12 @@ const stepBeneficiariosSchema = z
   })
   .refine(
     (data) => {
-      // Soma todos os percentuais, convertendo a string para número
       const total = data.beneficiarios.reduce((acc, ben) => {
-        // remove "%" e converte para número
         const val = parseFloat(ben.percentualAcionaria.replace("%", ""));
         return acc + (isNaN(val) ? 0 : val);
       }, 0);
 
-      return total === 100; // retorna true se for igual a 100
+      return total === 100;
     },
     {
       message: "A soma dos percentuais deve ser igual a 100%",
@@ -129,7 +128,6 @@ const stepBeneficiariosSchema = z
     }
   );
 
-// Step 6: Origem dos Fundos
 const stepOrigemFundosSchema = z.object({
   origemFundos: z
     .array(z.string())
@@ -139,10 +137,7 @@ const stepOrigemFundosSchema = z.object({
     .nonempty("Forneça mais detalhes sobre a origem dos fundos"),
 });
 
-// Step 7: Registro Contábil – sem validação específica (pode ser ajustado se necessário)
-const stepRegistroContabilSchema = z.object({});
-
-// Step 8: Documentos
+// 🚀 Agora os documentos são OPCIONAIS
 const stepDocumentosSchema = z.object({
   documentos: z
     .array(
@@ -151,9 +146,10 @@ const stepDocumentosSchema = z.object({
         url: z.string().nonempty("URL do documento é obrigatória"),
       })
     )
-    .min(1, "Adicione pelo menos um documento"),
+    .optional(), // Agora o array pode ser vazio ou omitido
 });
 
+// 🚀 Estado inicial do formulário
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
 export function FormProvider({ children }: { children: React.ReactNode }) {
@@ -171,15 +167,17 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
     acionistas: [],
     beneficiarios: [],
     capitalSocial: "",
-    concordaCapitalSocial: false, // valor inicial
     origemFundos: [],
     detalhesOrigemFundos: "",
     responsavelContabilidade: undefined,
-    documentos: [],
+    documentos: [], // Documentos agora iniciam vazios, mas são opcionais
   });
 
   const updateFormData = (newData: Partial<FormData>) => {
-    setFormData((prev) => ({ ...prev, ...newData }));
+    setFormData((prev) => ({
+      ...prev,
+      ...newData,
+    }));
   };
 
   const nextStep = () => {
@@ -187,46 +185,23 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
 
     switch (currentStep) {
       case 1:
-        validationResult = step1Schema.safeParse({
-          tipoEstrutura: formData.tipoEstrutura,
-        });
+        validationResult = step1Schema.safeParse(formData);
         break;
       case 2:
-        validationResult = step2Schema.safeParse({
-          nomeEmpresa: formData.nomeEmpresa,
-          jurisdicao: formData.jurisdicao,
-          isOperacional: formData.isOperacional,
-          propositoIncorporacao: formData.propositoIncorporacao,
-        });
+        validationResult = step2Schema.safeParse(formData);
         break;
       case 3:
-        validationResult = stepDiretoresSchema.safeParse({
-          diretores: formData.diretores,
-          diretoriaPersonalizada: formData.diretoriaPersonalizada,
-          jurisdicao: formData.jurisdicao,
-        });
-        break;
-      case 4:
-        validationResult = { success: true }; // Acionistas são opcionais
+        validationResult = stepDiretoresSchema.safeParse(formData);
         break;
       case 5:
-        validationResult = stepBeneficiariosSchema.safeParse({
-          beneficiarios: formData.beneficiarios,
-        });
+        validationResult = stepBeneficiariosSchema.safeParse(formData);
         break;
       case 6:
-        validationResult = stepOrigemFundosSchema.safeParse({
-          origemFundos: formData.origemFundos,
-          detalhesOrigemFundos: formData.detalhesOrigemFundos,
-        });
-        break;
-      case 7:
-        // Registro Contábil: sem validação específica
-        validationResult = stepRegistroContabilSchema.safeParse({});
+        validationResult = stepOrigemFundosSchema.safeParse(formData);
         break;
       case 8:
         validationResult = stepDocumentosSchema.safeParse({
-          documentos: formData.documentos,
+          documentos: formData.documentos?.length ? formData.documentos : [],
         });
         break;
       default:
@@ -245,11 +220,11 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    setCurrentStep(currentStep + 1);
+    setCurrentStep((prev) => prev + 1);
   };
 
   const previousStep = () => {
-    setCurrentStep(currentStep - 1);
+    setCurrentStep((prev) => prev - 1);
   };
 
   return (
@@ -270,7 +245,7 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
 
 export function useForm() {
   const context = useContext(FormContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error("useForm must be used within a FormProvider");
   }
   return context;
