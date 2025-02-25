@@ -8,6 +8,7 @@ import { jurisdicoesEmpresas } from "@/data/jurisdicoes";
 import { Director } from "@/interfaces/Director";
 import { Shareholder } from "@/interfaces/Shareholdes";
 import { BeneficioalOwner, ContabilResponsabel } from "@/interfaces/BO";
+import { CheckedState } from "@radix-ui/react-checkbox";
 
 // Interface para documentos
 export interface Document {
@@ -26,7 +27,7 @@ export interface FormData {
   diretoriaPersonalizada: boolean;
   acionistas: Shareholder[];
   beneficiarios: BeneficioalOwner[];
-  capitalSocial: string;
+  capitalSocial: CheckedState;
   origemFundos: string[];
   detalhesOrigemFundos: string;
   responsavelContabilidade?: ContabilResponsabel;
@@ -166,7 +167,7 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
     diretoriaPersonalizada: false,
     acionistas: [],
     beneficiarios: [],
-    capitalSocial: "",
+    capitalSocial: false,
     origemFundos: [],
     detalhesOrigemFundos: "",
     responsavelContabilidade: undefined,

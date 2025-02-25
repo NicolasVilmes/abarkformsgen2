@@ -160,9 +160,9 @@ export function InformacoesGerais() {
           <div className="flex items-center space-x-2 mt-4">
             <Checkbox
               id="concordaCapital"
-              checked={formData.concordaCapitalSocial}
+              checked={formData.capitalSocial}
               onCheckedChange={(checked) =>
-                updateFormData({ concordaCapitalSocial: Boolean(checked) })
+                updateFormData({ capitalSocial: Boolean(checked) })
               }
               className="h-4 w-4"
             />
