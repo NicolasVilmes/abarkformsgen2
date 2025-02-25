@@ -269,18 +269,18 @@ export async function POST(request: Request) {
     `;
 
     const transporter = nodemailer.createTransport({
-      host: process.env.NEXT_PUBLIC_EMAIL_HOST,
-      port: Number(process.env.NEXT_PUBLIC_EMAIL_PORT),
-      secure: process.env.NEXT_PUBLIC_EMAIL_SECURE === "true",
+      host: process.env.EMAIL_HOST,
+      port: Number(process.env.EMAIL_PORT),
+      secure: process.env.EMAIL_SECURE === "true",
       auth: {
-        user: process.env.NEXT_PUBLIC_EMAIL_USER,
-        pass: process.env.NEXT_PUBLIC_EMAIL_PASS,
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     const mailOptions = {
-      from: process.env.NEXT_PUBLIC_EMAIL_FROM,
-      to: process.env.NEXT_PUBLIC_EMAIL_TO,
+      from: process.env.EMAIL_FROM,
+      to: process.env.EMAIL_TO,
       subject: "Novo Formulário Enviado",
       text: JSON.stringify(parsedData, null, 2),
       html: htmlContent,
