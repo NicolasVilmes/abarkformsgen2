@@ -273,8 +273,8 @@ export async function POST(request: Request) {
       port: Number(process.env.NEXT_PUBLIC_EMAIL_PORT),
       secure: process.env.NEXT_PUBLIC_EMAIL_SECURE === "true",
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: process.env.NEXT_PUBLIC_EMAIL_USER,
+        pass: process.env.NEXT_PUBLIC_EMAIL_PASS,
       },
     });
 
