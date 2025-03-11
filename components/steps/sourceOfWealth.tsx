@@ -10,10 +10,10 @@ export function SourceOfWealth() {
 
   const opcoes = [
     "Empresario",
-    "Sarlário",
+    "Salário",
     "Economias",
     "Investimentos",
-    "Herdança",
+    "Herança",
     "Venda de Propriedades",
     "Outros",
   ];

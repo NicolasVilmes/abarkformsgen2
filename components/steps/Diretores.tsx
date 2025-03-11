@@ -53,8 +53,6 @@ export function Diretores() {
         Pessoas ou organizações designadas para atuar em nome da empresa em
         questões legais, sem necessariamente terem poder de decisão sobre ela.
         Dependendo da jurisdição, a quantidade mínima de diretores pode variar.
-        A diretoria de uma empresa é uma informação pública; caso deseje
-        anonimato, é possível optar por uma diretoria terceirizada.
       </p>
       {selectedJurisdicao && (
         <p className="text-sm">
