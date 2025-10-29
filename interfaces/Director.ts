@@ -1,5 +1,5 @@
 export interface Director {
-nome: string;
+  nome: string;
   origem: string;
   nascimento: string;
   address: string;

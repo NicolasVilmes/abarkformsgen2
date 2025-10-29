@@ -1,4 +1,4 @@
-export interface BeneficioalOwner {
+export interface BeneficialOwner {
   nome: string;
   endereco: string;
   ocupacao: string;
@@ -7,9 +7,10 @@ export interface BeneficioalOwner {
   isPep: boolean;
   pepDescricao?: string;
   percentualAcionaria: string;
+  director?: string;
 }
 
-export interface ContabilResponsabel {
+export interface ContabilResponsavel {
   nome: string;
   endereco: string;
 }

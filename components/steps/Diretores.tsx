@@ -25,8 +25,6 @@ export function Diretores() {
       diretores: novosDiretores,
       diretoriaPersonalizada: false,
     });
-    console.log("Diretor adicionado:", diretor);
-    console.log("Diretores atualizados:", novosDiretores);
   };
 
   // Remove um diretor do array

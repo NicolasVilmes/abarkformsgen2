@@ -1,11 +1,11 @@
 "use client";
 import * as React from "react";
 import { useState } from "react";
-import { useForm } from "@/context/FormContext";
-import { Card } from "../ui/card";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
+import { useFormEn } from "@/context/FormContextEN";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { User } from "lucide-react";
 import {
   Dialog,
@@ -14,35 +14,32 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
 
-// Interface para a entidade (para exibição)
 interface Entity {
   nome: string;
   endereco?: string;
   type: "Diretor" | "Acionista" | "Beneficiário";
 }
 
-// Schema de validação com Zod
 const DocumentSchema = z.object({
-  passaporteFile: z.instanceof(File, { message: "O passaporte é obrigatório" }),
+  passaporteFile: z.instanceof(File, { message: "Passport copy is required." }),
   comprovanteResidenciaFile: z.instanceof(File, {
-    message: "O comprovante de residência é obrigatório",
+    message: "Proof of address is required.",
   }),
   cartaReferenciaFile: z
     .instanceof(File, {
-      message: "A carta de referência bancária é obrigatória",
+      message: "Bank reference letter is required.",
     })
     .optional(),
 });
 
-export function Docs() {
-  const { formData, updateFormData } = useForm();
+export function DocumentsEn() {
+  const { formData, updateFormData } = useFormEn();
   const { toast } = useToast();
 
-  // Lista combinada de entidades
   const allEntities: Entity[] = [
     ...formData.diretores.map((d) => ({
       nome: d.nome,
@@ -77,7 +74,6 @@ export function Docs() {
   );
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  // Converte um arquivo para Base64
   const fileToBase64 = (file: File): Promise<string> =>
     new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -99,7 +95,6 @@ export function Docs() {
           : undefined,
     };
 
-    // Validação com Zod
     const result = DocumentSchema.safeParse(documentData);
     if (!result.success) {
       const validationErrors: { [key: string]: string } = {};
@@ -123,7 +118,7 @@ export function Docs() {
       if (passaporteFile) {
         const base64 = await fileToBase64(passaporteFile);
         docs.push({
-          title: `Passaporte - ${selectedEntity.nome}`,
+          title: `Passport - ${selectedEntity.nome}`,
           url: base64,
           entityName: selectedEntity.nome,
           entityType: selectedEntity.type,
@@ -132,7 +127,7 @@ export function Docs() {
       if (comprovanteResidenciaFile) {
         const base64 = await fileToBase64(comprovanteResidenciaFile);
         docs.push({
-          title: `Comprovante de Residência - ${selectedEntity.nome}`,
+          title: `Proof of Address - ${selectedEntity.nome}`,
           url: base64,
           entityName: selectedEntity.nome,
           entityType: selectedEntity.type,
@@ -141,14 +136,13 @@ export function Docs() {
       if (selectedEntity.type === "Beneficiário" && cartaReferenciaFile) {
         const base64 = await fileToBase64(cartaReferenciaFile);
         docs.push({
-          title: `Carta de Referência Bancária - ${selectedEntity.nome}`,
+          title: `Bank Reference Letter - ${selectedEntity.nome}`,
           url: base64,
           entityName: selectedEntity.nome,
           entityType: selectedEntity.type,
         });
       }
 
-      // Atualiza os documentos no contexto
       const filteredDocs = (formData.documentos || []).filter(
         (doc) =>
           doc.entityName?.toLowerCase() !==
@@ -165,8 +159,8 @@ export function Docs() {
     } catch (error) {
       void error;
       toast({
-        title: "Falha ao anexar documentos",
-        description: "Não foi possível processar os arquivos. Tente novamente.",
+        title: "Upload failed",
+        description: "We couldn't process the files. Please try again.",
         variant: "destructive",
       });
     }
@@ -175,55 +169,61 @@ export function Docs() {
   return (
     <div className="space-y-6">
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-semibold mb-2">Documentos</h2>
+        <h2 className="text-2xl font-semibold mb-2">Documents</h2>
         <p className="text-gray-500">
-          Selecione uma pessoa ou organização para fazer upload dos documentos.
+          Select an individual or organization to upload the required documents.
         </p>
       </div>
 
-      {/* Renderiza os cards para as entidades únicas */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        {uniqueEntities.map((entity, index) => (
-          <Card
-            key={index}
-            className="p-4 border rounded-lg cursor-pointer flex items-center"
-            onClick={() => {
-              setSelectedEntity(entity);
-              setOpen(true);
-            }}
-          >
-            <User className="w-6 h-6 mr-2" />
-            <div>
-              <Label className="text-sm font-medium">{entity.nome}</Label>
-              {entity.endereco && (
-                <p className="text-xs text-gray-600">{entity.endereco}</p>
-              )}
-              <p className="text-xs text-gray-500 italic">{entity.type}</p>
-            </div>
-          </Card>
-        ))}
+        {uniqueEntities.map((entity, index) => {
+          const typeLabels: Record<Entity["type"], string> = {
+            Diretor: "Director",
+            Acionista: "Shareholder",
+            Beneficiário: "Beneficial Owner",
+          };
+          return (
+            <Card
+              key={index}
+              className="p-4 border rounded-lg cursor-pointer flex items-center"
+              onClick={() => {
+                setSelectedEntity(entity);
+                setOpen(true);
+              }}
+            >
+              <User className="w-6 h-6 mr-2" />
+              <div>
+                <Label className="text-sm font-medium">{entity.nome}</Label>
+                {entity.endereco && (
+                  <p className="text-xs text-gray-600">{entity.endereco}</p>
+                )}
+                <p className="text-xs text-gray-500 italic">
+                  {typeLabels[entity.type] ?? entity.type}
+                </p>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
-      {/* Diálogo para upload de documentos */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Upload de Documentos</DialogTitle>
+            <DialogTitle>Upload Documents</DialogTitle>
             <DialogDescription>
-              Faça upload dos documentos para{" "}
-              <strong>{selectedEntity?.nome}</strong>.
+              Upload files for <strong>{selectedEntity?.nome}</strong>.
               {selectedEntity?.type === "Beneficiário" && (
                 <span>
                   {" "}
-                  Como pessoa física, inclua passaporte, comprovante de
-                  residência e carta de referência bancária.
+                  For individuals, please upload a passport, proof of address, and a
+                  bank reference letter.
                 </span>
               )}
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUploadSubmit} className="space-y-4">
             <div>
-              <Label>Passaporte</Label>
+              <Label>Passport</Label>
               <Input
                 type="file"
                 onChange={(e) => setPassaporteFile(e.target.files?.[0] || null)}
@@ -233,7 +233,7 @@ export function Docs() {
               )}
             </div>
             <div>
-              <Label>Comprovante de Residência</Label>
+              <Label>Proof of Address</Label>
               <Input
                 type="file"
                 onChange={(e) =>
@@ -248,7 +248,7 @@ export function Docs() {
             </div>
             {selectedEntity?.type === "Beneficiário" && (
               <div>
-                <Label>Carta de Referência Bancária</Label>
+                <Label>Bank Reference Letter</Label>
                 <Input
                   type="file"
                   onChange={(e) =>
@@ -263,7 +263,7 @@ export function Docs() {
               </div>
             )}
             <DialogFooter>
-              <Button type="submit">Inserir Documentos</Button>
+              <Button type="submit">Attach documents</Button>
             </DialogFooter>
           </form>
         </DialogContent>

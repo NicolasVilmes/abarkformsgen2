@@ -15,13 +15,37 @@ export function Beneficiarios() {
   const [editingIndex, setEditingIndex] = React.useState<number | null>(null);
   const [error, setError] = React.useState<string | null>(null);
 
-  // Função para calcular o total de participação acionária
-  const calcularPercentualTotal = (beneficiarios: any[]) => {
+  // Calcula o total de participação acionária considerando os valores informados.
+  function calcularPercentualTotal(beneficiarios: any[]) {
     return beneficiarios.reduce((total, b) => {
       const val = parseFloat(b.percentualAcionaria.replace("%", "")) || 0;
       return total + val;
     }, 0);
-  };
+  }
+
+  const percentualTotal = React.useMemo(
+    () => calcularPercentualTotal(formData.beneficiarios),
+    [formData.beneficiarios]
+  );
+
+  const formatPercentual = (valor: number) =>
+    Number.isInteger(valor) ? valor.toString() : valor.toFixed(2);
+
+  React.useEffect(() => {
+    if (formData.beneficiarios.length === 0) {
+      setError(null);
+      return;
+    }
+    if (percentualTotal < 100) {
+      setError(
+        `A soma dos percentuais deve totalizar 100%. Atual: ${formatPercentual(
+          percentualTotal
+        )}%`
+      );
+    } else if (percentualTotal === 100) {
+      setError(null);
+    }
+  }, [percentualTotal, formData.beneficiarios.length]);
 
   // Adiciona ou atualiza um beneficiário
   const handleAddOrUpdateBeneficiario = (beneficiario: any) => {
@@ -52,7 +76,15 @@ export function Beneficiarios() {
       return;
     }
 
-    setError(null); // Remove erro caso seja válido
+    if (totalPercentual < 100) {
+      setError(
+        `A soma dos percentuais deve totalizar 100%. Atual: ${formatPercentual(
+          totalPercentual
+        )}%`
+      );
+    } else {
+      setError(null);
+    }
     updateFormData({ beneficiarios: novosBeneficiarios });
 
     setEditingIndex(null);
@@ -76,7 +108,15 @@ export function Beneficiarios() {
         variant: "destructive",
       });
     } else {
-      setError(null);
+      if (totalPercentual < 100 && novosBeneficiarios.length > 0) {
+        setError(
+          `A soma dos percentuais deve totalizar 100%. Atual: ${formatPercentual(
+            totalPercentual
+          )}%`
+        );
+      } else {
+        setError(null);
+      }
     }
 
     updateFormData({ beneficiarios: novosBeneficiarios });
@@ -99,6 +139,11 @@ export function Beneficiarios() {
 
       {/* Exibe mensagem de erro caso ultrapasse 100% */}
       {error && <p className="text-red-500 text-center">{error}</p>}
+      {!error && formData.beneficiarios.length > 0 && (
+        <p className="text-center text-sm text-gray-600">
+          Total atual: {formatPercentual(percentualTotal)}%
+        </p>
+      )}
 
       {formData.beneficiarios.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

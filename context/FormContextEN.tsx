@@ -10,7 +10,6 @@ import { Shareholder } from "@/interfaces/Shareholdes";
 import { BeneficialOwner, ContabilResponsavel } from "@/interfaces/BO";
 import { CheckedState } from "@radix-ui/react-checkbox";
 
-// Interface para documentos
 export interface Document {
   title: string;
   url: string;
@@ -18,8 +17,7 @@ export interface Document {
   entityType?: "Diretor" | "Acionista" | "Beneficiário";
 }
 
-// Interface principal do formulário
-export interface FormData {
+export interface FormDataEn {
   tipoEstrutura: string;
   nomeEmpresa: string[];
   jurisdicao: string;
@@ -33,42 +31,39 @@ export interface FormData {
   origemFundos: string[];
   detalhesOrigemFundos: string;
   responsavelContabilidade?: ContabilResponsavel;
-  documentos?: Document[]; // Documentos opcionais; preenchidos via etapa dedicada
+  documentos?: Document[];
 }
 
 interface FormContextType {
   currentStep: number;
   setCurrentStep: (step: number) => void;
-  formData: FormData;
-  updateFormData: (data: Partial<FormData>) => void;
+  formData: FormDataEn;
+  updateFormData: (data: Partial<FormDataEn>) => void;
   nextStep: () => void;
   previousStep: () => void;
 }
 
-// Schemas de validação com Zod
 const step1Schema = z.object({
-  tipoEstrutura: z.string().nonempty("Selecione o tipo de estrutura"),
+  tipoEstrutura: z.string().nonempty("Select a structure type."),
 });
 
 const step2Schema = z.object({
   nomeEmpresa: z
-    .array(
-      z.string().nonempty("Cada opção de nome da empresa deve ser preenchida")
-    )
-    .length(3, "Forneça 3 opções para o nome da empresa"),
-  jurisdicao: z.string().nonempty("Jurisdicao é obrigatória"),
+    .array(z.string().nonempty("Provide an option for the company name."))
+    .length(3, "Please provide three name options, in order of preference."),
+  jurisdicao: z.string().nonempty("Jurisdiction is required."),
   isOperacional: z.boolean(),
   propositoIncorporacao: z
     .string()
-    .nonempty("Propósito de incorporação é obrigatório"),
+    .nonempty("Describe the purpose of incorporation."),
 });
 
 const stepDiretoresSchema = z
   .object({
     diretores: z.array(
       z.object({
-        nome: z.string().nonempty("Nome do diretor é obrigatório"),
-        passport: z.string().nonempty("Número do passaporte é obrigatório"),
+        nome: z.string().nonempty("Director name is required."),
+        passport: z.string().nonempty("Passport number is required."),
         origem: z.string().optional(),
         nascimento: z.string().optional(),
         address: z.string().optional(),
@@ -91,7 +86,7 @@ const stepDiretoresSchema = z
     },
     {
       message:
-        "Número mínimo de diretores não atingido para a jurisdição selecionada",
+        "The selected jurisdiction requires at least the minimum number of directors.",
       path: ["diretores"],
     }
   );
@@ -101,20 +96,18 @@ const stepBeneficiariosSchema = z
     beneficiarios: z
       .array(
         z.object({
-          nome: z.string().nonempty("Nome é obrigatório"),
-          endereco: z.string().nonempty("Endereço é obrigatório"),
-          ocupacao: z.string().nonempty("Ocupação é obrigatória"),
-          nacionalidade: z.string().nonempty("Nacionalidade é obrigatória"),
-          dataNascimento: z
-            .string()
-            .nonempty("Data de nascimento é obrigatória"),
+          nome: z.string().nonempty("Name is required."),
+          endereco: z.string().nonempty("Address is required."),
+          ocupacao: z.string().nonempty("Occupation is required."),
+          nacionalidade: z.string().nonempty("Nationality is required."),
+          dataNascimento: z.string().nonempty("Date of birth is required."),
           isPep: z.boolean(),
           percentualAcionaria: z
             .string()
-            .nonempty("Percentual acionário é obrigatório"),
+            .nonempty("Ownership percentage is required."),
         })
       )
-      .min(1, "Adicione pelo menos um beneficiário"),
+      .min(1, "Add at least one beneficial owner."),
   })
   .refine(
     (data) => {
@@ -126,7 +119,7 @@ const stepBeneficiariosSchema = z
       return total === 100;
     },
     {
-      message: "A soma dos percentuais deve ser igual a 100%",
+      message: "The ownership percentages must add up to 100%.",
       path: ["beneficiarios"],
     }
   );
@@ -134,32 +127,30 @@ const stepBeneficiariosSchema = z
 const stepOrigemFundosSchema = z.object({
   origemFundos: z
     .array(z.string())
-    .min(1, "Selecione ao menos uma opção para a origem dos fundos"),
+    .min(1, "Select at least one source of funds."),
   detalhesOrigemFundos: z
     .string()
-    .nonempty("Forneça mais detalhes sobre a origem dos fundos"),
+    .nonempty("Provide additional details about the funds' origin."),
 });
 
-// 🚀 Agora os documentos são OPCIONAIS
 const stepDocumentosSchema = z.object({
   documentos: z
     .array(
       z.object({
-        title: z.string().nonempty("Título do documento é obrigatório"),
-        url: z.string().nonempty("URL do documento é obrigatória"),
+        title: z.string().nonempty("Document title is required."),
+        url: z.string().nonempty("Document URL is required."),
       })
     )
-    .optional(), // Agora o array pode ser vazio ou omitido
+    .optional(),
 });
 
-// 🚀 Estado inicial do formulário
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
-export function FormProvider({ children }: { children: React.ReactNode }) {
+export function FormProviderEn({ children }: { children: React.ReactNode }) {
   const { toast } = useToast();
 
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormDataEn>({
     tipoEstrutura: "",
     nomeEmpresa: ["", "", ""],
     jurisdicao: "",
@@ -173,10 +164,10 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
     origemFundos: [],
     detalhesOrigemFundos: "",
     responsavelContabilidade: undefined,
-    documentos: [], // Documentos agora iniciam vazios, mas são opcionais
+    documentos: [],
   });
 
-  const updateFormData = (newData: Partial<FormData>) => {
+  const updateFormData = (newData: Partial<FormDataEn>) => {
     setFormData((prev) => ({
       ...prev,
       ...newData,
@@ -216,7 +207,7 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
         .map((err: any) => err.message)
         .join(", ");
       toast({
-        title: "Erro de validação",
+        title: "Validation error",
         description: messages,
         variant: "destructive",
       });
@@ -246,10 +237,10 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function useForm() {
+export function useFormEn() {
   const context = useContext(FormContext);
   if (!context) {
-    throw new Error("useForm must be used within a FormProvider");
+    throw new Error("useFormEn must be used within a FormProviderEn");
   }
   return context;
 }

@@ -49,7 +49,6 @@ export function AddAcionistaDialog({
   const [percentualAcoes, setPercentualAcoes] = React.useState(
     initialData?.percentualAcoes || ""
   );
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [errors, setErrors] = React.useState<{ [key: string]: string }>({});
 
   React.useEffect(() => {
@@ -86,6 +85,7 @@ export function AddAcionistaDialog({
       return;
     }
 
+    setErrors({});
     onAdd(result.data);
     setOpen(false);
   };
@@ -109,6 +109,9 @@ export function AddAcionistaDialog({
               onChange={(e) => setNomeEmpresa(e.target.value)}
               className="w-full"
             />
+            {errors.nomeEmpresa && (
+              <p className="text-red-500 text-sm mt-1">{errors.nomeEmpresa}</p>
+            )}
           </div>
           <div>
             <Label htmlFor="paisIncorporacao" className="block mb-1">
@@ -120,6 +123,11 @@ export function AddAcionistaDialog({
               onChange={(e) => setPaisIncorporacao(e.target.value)}
               className="w-full"
             />
+            {errors.paisIncorporacao && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.paisIncorporacao}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="dataIncorporacao" className="block mb-1">
@@ -132,6 +140,11 @@ export function AddAcionistaDialog({
               onChange={(e) => setDataIncorporacao(e.target.value)}
               className="w-full"
             />
+            {errors.dataIncorporacao && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.dataIncorporacao}
+              </p>
+            )}
           </div>
           <div>
             <Label htmlFor="percentualAcoes" className="block mb-1">
@@ -143,6 +156,11 @@ export function AddAcionistaDialog({
               onChange={(e) => setPercentualAcoes(e.target.value)}
               className="w-full"
             />
+            {errors.percentualAcoes && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.percentualAcoes}
+              </p>
+            )}
           </div>
         </div>
         <DialogFooter className="mt-6">

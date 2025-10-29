@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useForm } from "@/context/FormContext";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -30,7 +30,10 @@ export function RegistroContabil() {
   );
 
   // Cria uma constante para os beneficiários (garante um array mesmo que indefinido)
-  const beneficiaries = formData.beneficiarios || [];
+  const beneficiaries = useMemo(
+    () => formData.beneficiarios || [],
+    [formData.beneficiarios]
+  );
 
   // Sempre que um beneficiário for selecionado, atualiza os campos e define o método como "beneficiary"
   useEffect(() => {
@@ -78,10 +81,6 @@ export function RegistroContabil() {
     e.preventDefault();
     updateFormData({
       responsavelContabilidade: { nome: rcNome, endereco: rcEndereco },
-    });
-    console.log("Responsável Contábil salvo:", {
-      nome: rcNome,
-      endereco: rcEndereco,
     });
     setShowRCForm(false);
   };

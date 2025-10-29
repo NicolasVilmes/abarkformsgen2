@@ -1,5 +1,5 @@
 "use client";
-import { useForm } from "@/context/FormContext";
+import { useFormEn } from "@/context/FormContextEN";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -16,14 +16,14 @@ interface NavigationButtonsProps {
   totalSteps: number;
 }
 
-export function NavigationButtons({ totalSteps }: NavigationButtonsProps) {
-  const { currentStep, setCurrentStep, nextStep, formData } = useForm();
+export function NavigationButtonsEn({ totalSteps }: NavigationButtonsProps) {
+  const { currentStep, setCurrentStep, nextStep, formData } = useFormEn();
   const [isLoading, setIsLoading] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
   const { toast } = useToast();
 
   const handleSubmit = async () => {
-    setIsLoading(true); // Ativa o spinner de carregamento
+    setIsLoading(true);
 
     const formDataToSend = new FormData();
     formDataToSend.append("data", JSON.stringify(formData));
@@ -42,64 +42,60 @@ export function NavigationButtons({ totalSteps }: NavigationButtonsProps) {
       if (!res.ok) {
         const description =
           typeof payload === "string"
-            ? payload || "Erro inesperado ao enviar o formulário."
-            : payload?.message || "Erro inesperado ao enviar o formulário.";
+            ? payload || "Unexpected error while sending the form."
+            : payload?.message || "Unexpected error while sending the form.";
         throw new Error(description);
       }
-      setIsSuccess(true); // Exibe o modal de sucesso
+      setIsSuccess(true);
     } catch (error) {
       const description =
         error instanceof Error
           ? error.message
-          : "Erro inesperado ao enviar o formulário.";
+          : "Unexpected error while sending the form.";
       toast({
-        title: "Envio não concluído",
+        title: "Submission failed",
         description,
         variant: "destructive",
       });
     } finally {
-      setIsLoading(false); // Desativa o spinner após o envio
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="flex justify-between mt-8">
-      {/* Botão Anterior */}
       <Button
         variant="outline"
         onClick={() => setCurrentStep(currentStep - 1)}
         disabled={currentStep === 1}
         className="transition-all duration-200 hover:bg-gray-100"
       >
-        Anterior
+        Back
       </Button>
 
-      {/* Botão Próximo ou Enviar */}
       <Button
         onClick={currentStep === totalSteps ? handleSubmit : nextStep}
         className="bg-abark hover:bg-abark-dark text-white transition-all duration-200"
       >
-        {currentStep === totalSteps ? "Enviar" : "Próximo"}
+        {currentStep === totalSteps ? "Submit" : "Next"}
       </Button>
 
-      {/* Spinner de Carregamento - Tela cheia */}
       {isLoading && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="flex flex-col items-center">
             <Loader2 className="w-12 h-12 text-white animate-spin" />
-            <p className="text-white mt-2">Enviando...</p>
+            <p className="text-white mt-2">Sending...</p>
           </div>
         </div>
       )}
 
-      {/* Modal de Sucesso */}
       <Dialog open={isSuccess} onOpenChange={setIsSuccess}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>Formulário Enviado!</DialogTitle>
+            <DialogTitle>Form Submitted!</DialogTitle>
           </DialogHeader>
           <p className="text-center text-gray-600">
-            Seu formulário foi enviado com sucesso.
+            Your form has been successfully submitted.
           </p>
           <DialogFooter>
             <Button

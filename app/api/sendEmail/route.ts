@@ -6,28 +6,34 @@ import nodemailer from "nodemailer";
 
 // Função auxiliar para converter uma string base64 (com prefixo) em attachment
 const base64ToAttachment = (doc: { title: string; url: string }) => {
+  if (!doc?.url) {
+    return null;
+  }
   const parts = doc.url.split(",");
   if (parts.length !== 2) {
-    throw new Error("Formato base64 inválido");
+    return null;
   }
   const mimeMatch = parts[0].match(/^data:(.+);base64$/);
-  let extension = "bin"; // valor padrão
+  let extension = "bin";
+  let contentType: string | undefined;
   if (mimeMatch && mimeMatch[1]) {
     const mimeType = mimeMatch[1];
+    contentType = mimeType;
     const mimeParts = mimeType.split("/");
-    if (mimeParts.length === 2) {
+    if (mimeParts.length === 2 && mimeParts[1]) {
       extension = mimeParts[1];
     }
   }
   return {
     filename: `${doc.title}.${extension}`,
-    content: Buffer.from(parts[1], "base64"),
+    content: parts[1],
+    encoding: "base64" as const,
+    contentType,
   };
 };
 
 export async function POST(request: Request) {
   try {
-    console.log("Content-Type:", request.headers.get("content-type"));
     const formData = await request.formData();
 
     const dataField = formData.get("data");
@@ -37,12 +43,20 @@ export async function POST(request: Request) {
     }
 
     // Converte documentos para attachments (se houver)
-    let attachments: { filename: string; content: Buffer }[] = [];
-    if (parsedData.documentos && Array.isArray(parsedData.documentos)) {
-      attachments = parsedData.documentos.map((doc: any) =>
-        base64ToAttachment(doc)
-      );
-    }
+    const attachments = Array.isArray(parsedData.documentos)
+      ? parsedData.documentos
+          .map((doc: any) => base64ToAttachment(doc))
+          .filter(
+            (
+              item: any
+            ): item is {
+              filename: string;
+              content: string;
+              encoding: "base64";
+              contentType?: string;
+            } => Boolean(item)
+          )
+      : [];
 
     // Nome do primeiro beneficiário para exibição no cabeçalho
     const cliente =
@@ -254,7 +268,12 @@ export async function POST(request: Request) {
                   <ul>
                     ${
                       parsedData.documentos && parsedData.documentos.length
-                        ? parsedData.documentos.map((doc: any) => `<li>${doc.title}</li>`).join("")
+                        ? parsedData.documentos
+                            .map(
+                              (doc: any, index: number) =>
+                                `<li>${index + 1}. ${doc.title}</li>`
+                            )
+                            .join("")
                         : "<li>N/A</li>"
                     }
                   </ul>
@@ -268,19 +287,40 @@ export async function POST(request: Request) {
       </html>
     `;
 
+    const emailUser = process.env.EMAIL_USER;
+    const emailPass = process.env.EMAIL_PASS;
+    const emailFrom = process.env.EMAIL_FROM;
+    const emailTo = process.env.EMAIL_TO;
+    const emailHost = process.env.EMAIL_HOST || "smtp.gmail.com";
+    const emailPort = Number(process.env.EMAIL_PORT ?? 587);
+    const emailSecure =
+      process.env.EMAIL_SECURE !== undefined
+        ? process.env.EMAIL_SECURE === "true"
+        : emailPort === 465;
+
+    if (!emailUser || !emailPass || !emailFrom || !emailTo || Number.isNaN(emailPort)) {
+      return NextResponse.json(
+        {
+          message:
+            "Configuração de e-mail incompleta. Verifique EMAIL_USER, EMAIL_PASS, EMAIL_FROM, EMAIL_TO e EMAIL_PORT.",
+        },
+        { status: 500 }
+      );
+    }
+
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: Number(process.env.EMAIL_PORT),
-      secure: process.env.EMAIL_SECURE === "true",
+      host: emailHost,
+      port: emailPort,
+      secure: emailSecure,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: emailUser,
+        pass: emailPass,
       },
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_FROM,
-      to: process.env.EMAIL_TO,
+      from: emailFrom,
+      to: emailTo,
       subject: "Novo Formulário Enviado",
       text: JSON.stringify(parsedData, null, 2),
       html: htmlContent,
@@ -288,7 +328,11 @@ export async function POST(request: Request) {
     };
 
     const info = await transporter.sendMail(mailOptions);
-    return NextResponse.json({ message: "Email enviado com sucesso", info });
+    return NextResponse.json({
+      message: "Email enviado com sucesso",
+      info,
+      attachmentsSent: attachments.length,
+    });
   } catch (error) {
     console.error("Erro ao enviar email:", error);
     return NextResponse.json(

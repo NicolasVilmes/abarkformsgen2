@@ -1,14 +1,13 @@
 "use client";
-import { useForm } from "@/context/FormContext";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProgressBarProps {
   steps: string[];
+  currentStep: number;
 }
 
-export function ProgressBar({ steps }: ProgressBarProps) {
-  const { currentStep } = useForm();
+export function ProgressBar({ steps, currentStep }: ProgressBarProps) {
   const isMobile = useIsMobile();
 
   // Define os tamanhos dos círculos para manter consistência
