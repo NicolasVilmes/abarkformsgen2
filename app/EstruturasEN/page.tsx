@@ -5,7 +5,7 @@ import { GeneralInformation } from "@/components/steps-en/GeneralInformation";
 import { DirectorsEn } from "@/components/steps-en/Directors";
 import { BeneficialOwners } from "@/components/steps-en/BeneficialOwners";
 import { SourceOfFunds } from "@/components/steps-en/SourceOfFunds";
-import { DocumentsEn } from "@/components/steps-en/Documents";
+// import { DocumentsEn } from "@/components/steps-en/Documents";
 import { AccountingRecords } from "@/components/steps-en/AccountingRecords";
 import { useFormEn } from "@/context/FormContextEN";
 import { NavigationButtonsEn } from "@/components/NavigationButtonsEn";
@@ -21,8 +21,8 @@ function FormSteps() {
       {currentStep === 3 && <DirectorsEn />}
       {currentStep === 4 && <BeneficialOwners />}
       {currentStep === 5 && <SourceOfFunds />}
-      {currentStep === 6 && <DocumentsEn />}
-      {currentStep === 7 && <AccountingRecords />}
+      {/* {currentStep === 6 && <DocumentsEn />} */}
+      {currentStep === 6 && <AccountingRecords />}
     </div>
   );
 }
@@ -48,12 +48,12 @@ export default function EstruturasEN() {
     "Directors",
     "Beneficial Owners",
     "Source of Funds",
-    "Documents",
+    // "Documents",
     "Accounting Records",
   ];
 
   return (
-   <FormProviderEn>
+    <FormProviderEn>
       <FormContainer steps={steps} />
     </FormProviderEn>
   );

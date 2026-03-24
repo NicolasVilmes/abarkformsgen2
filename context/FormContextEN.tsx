@@ -70,7 +70,7 @@ const stepDiretoresSchema = z
         telefone: z.string().optional(),
         email: z.string().optional(),
         occupation: z.string().optional(),
-      })
+      }),
     ),
     diretoriaPersonalizada: z.boolean(),
     jurisdicao: z.string().nonempty(),
@@ -79,7 +79,7 @@ const stepDiretoresSchema = z
     (data) => {
       if (data.diretoriaPersonalizada) return true;
       const selected = jurisdicoesEmpresas.find(
-        (j) => j.value === data.jurisdicao
+        (j) => j.value === data.jurisdicao,
       );
       const min = selected ? selected.diretor : 0;
       return data.diretores.length >= min;
@@ -88,7 +88,7 @@ const stepDiretoresSchema = z
       message:
         "The selected jurisdiction requires at least the minimum number of directors.",
       path: ["diretores"],
-    }
+    },
   );
 
 const stepBeneficiariosSchema = z
@@ -105,7 +105,7 @@ const stepBeneficiariosSchema = z
           percentualAcionaria: z
             .string()
             .nonempty("Ownership percentage is required."),
-        })
+        }),
       )
       .min(1, "Add at least one beneficial owner."),
   })
@@ -121,7 +121,7 @@ const stepBeneficiariosSchema = z
     {
       message: "The ownership percentages must add up to 100%.",
       path: ["beneficiarios"],
-    }
+    },
   );
 
 const stepOrigemFundosSchema = z.object({
@@ -133,16 +133,16 @@ const stepOrigemFundosSchema = z.object({
     .nonempty("Provide additional details about the funds' origin."),
 });
 
-const stepDocumentosSchema = z.object({
-  documentos: z
-    .array(
-      z.object({
-        title: z.string().nonempty("Document title is required."),
-        url: z.string().nonempty("Document URL is required."),
-      })
-    )
-    .optional(),
-});
+// const stepDocumentosSchema = z.object({
+//   documentos: z
+//     .array(
+//       z.object({
+//         title: z.string().nonempty("Document title is required."),
+//         url: z.string().nonempty("Document URL is required."),
+//       })
+//     )
+//     .optional(),
+// });
 
 const FormContext = createContext<FormContextType | undefined>(undefined);
 
@@ -193,11 +193,11 @@ export function FormProviderEn({ children }: { children: React.ReactNode }) {
       case 5:
         validationResult = stepOrigemFundosSchema.safeParse(formData);
         break;
-      case 6:
-        validationResult = stepDocumentosSchema.safeParse({
-          documentos: formData.documentos?.length ? formData.documentos : [],
-        });
-        break;
+      // case 6:
+      //   validationResult = stepDocumentosSchema.safeParse({
+      //     documentos: formData.documentos?.length ? formData.documentos : [],
+      //   });
+      //   break;
       default:
         validationResult = { success: true };
     }

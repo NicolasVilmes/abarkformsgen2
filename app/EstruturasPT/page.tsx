@@ -5,7 +5,7 @@ import { InformacoesGerais } from "@/components/steps/InformacoesGerais";
 import { Diretores } from "@/components/steps/Diretores";
 import { Beneficiarios } from "@/components/steps/Beneficiarios";
 import { SourceOfWealth } from "@/components/steps/sourceOfWealth";
-import { Docs } from "@/components/steps/documentos";
+// import { Docs } from "@/components/steps/documentos";
 import { RegistroContabil } from "@/components/steps/RegistroContabil";
 import { useForm } from "@/context/FormContext";
 import { NavigationButtons } from "@/components/NavigationButtons";
@@ -21,8 +21,8 @@ function FormSteps() {
       {currentStep === 3 && <Diretores />}
       {currentStep === 4 && <Beneficiarios />}
       {currentStep === 5 && <SourceOfWealth />}
-      {currentStep === 6 && <Docs />}
-      {currentStep === 7 && <RegistroContabil />}
+      {/* {currentStep === 6 && <Docs />} */}
+      {currentStep === 6 && <RegistroContabil />}
     </div>
   );
 }
@@ -48,7 +48,7 @@ export default function EstruturasPT() {
     "Diretores",
     "Beneficiários",
     "Origem dos Fundos",
-    "Documentos",
+    // "Documentos",
     "Registro Contabil",
   ];
 

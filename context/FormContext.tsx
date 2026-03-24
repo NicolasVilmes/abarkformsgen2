@@ -53,7 +53,7 @@ const step1Schema = z.object({
 const step2Schema = z.object({
   nomeEmpresa: z
     .array(
-      z.string().nonempty("Cada opção de nome da empresa deve ser preenchida")
+      z.string().nonempty("Cada opção de nome da empresa deve ser preenchida"),
     )
     .length(3, "Forneça 3 opções para o nome da empresa"),
   jurisdicao: z.string().nonempty("Jurisdicao é obrigatória"),
@@ -75,7 +75,7 @@ const stepDiretoresSchema = z
         telefone: z.string().optional(),
         email: z.string().optional(),
         occupation: z.string().optional(),
-      })
+      }),
     ),
     diretoriaPersonalizada: z.boolean(),
     jurisdicao: z.string().nonempty(),
@@ -84,7 +84,7 @@ const stepDiretoresSchema = z
     (data) => {
       if (data.diretoriaPersonalizada) return true;
       const selected = jurisdicoesEmpresas.find(
-        (j) => j.value === data.jurisdicao
+        (j) => j.value === data.jurisdicao,
       );
       const min = selected ? selected.diretor : 0;
       return data.diretores.length >= min;
@@ -93,7 +93,7 @@ const stepDiretoresSchema = z
       message:
         "Número mínimo de diretores não atingido para a jurisdição selecionada",
       path: ["diretores"],
-    }
+    },
   );
 
 const stepBeneficiariosSchema = z
@@ -112,7 +112,7 @@ const stepBeneficiariosSchema = z
           percentualAcionaria: z
             .string()
             .nonempty("Percentual acionário é obrigatório"),
-        })
+        }),
       )
       .min(1, "Adicione pelo menos um beneficiário"),
   })
@@ -128,7 +128,7 @@ const stepBeneficiariosSchema = z
     {
       message: "A soma dos percentuais deve ser igual a 100%",
       path: ["beneficiarios"],
-    }
+    },
   );
 
 const stepOrigemFundosSchema = z.object({
@@ -141,16 +141,16 @@ const stepOrigemFundosSchema = z.object({
 });
 
 // 🚀 Agora os documentos são OPCIONAIS
-const stepDocumentosSchema = z.object({
-  documentos: z
-    .array(
-      z.object({
-        title: z.string().nonempty("Título do documento é obrigatório"),
-        url: z.string().nonempty("URL do documento é obrigatória"),
-      })
-    )
-    .optional(), // Agora o array pode ser vazio ou omitido
-});
+// const stepDocumentosSchema = z.object({
+//   documentos: z
+//     .array(
+//       z.object({
+//         title: z.string().nonempty("Título do documento é obrigatório"),
+//         url: z.string().nonempty("URL do documento é obrigatória"),
+//       })
+//     )
+//     .optional(), // Agora o array pode ser vazio ou omitido
+// });
 
 // 🚀 Estado inicial do formulário
 const FormContext = createContext<FormContextType | undefined>(undefined);
@@ -202,11 +202,11 @@ export function FormProvider({ children }: { children: React.ReactNode }) {
       case 5:
         validationResult = stepOrigemFundosSchema.safeParse(formData);
         break;
-      case 6:
-        validationResult = stepDocumentosSchema.safeParse({
-          documentos: formData.documentos?.length ? formData.documentos : [],
-        });
-        break;
+      // case 6:
+      //   validationResult = stepDocumentosSchema.safeParse({
+      //     documentos: formData.documentos?.length ? formData.documentos : [],
+      //   });
+      //   break;
       default:
         validationResult = { success: true };
     }
